@@ -1,13 +1,27 @@
 package main
 
 import (
-	"sprint13-14/pkg/server" // Импортируем наш созданный пакет
+	"log"
+	"os"
+	"sprint13-14/pkg/db"
+	"sprint13-14/pkg/server"
 )
 
 func main() {
-	// Указываем, где лежит фронтенд
-	webDir := "./web"
+	// Определяем файл базы данных
+	dbFile := os.Getenv("TODO_DBFILE")
+	if dbFile == "" {
+		dbFile = "scheduler.db"
+	}
 
-	// Запускаем сервер через наш пакет
+	// Инициализируем БД
+	err := db.Init(dbFile)
+	if err != nil {
+		log.Fatalf("Ошибка инициализации БД: %v", err)
+	}
+	defer db.DB.Close()
+
+	// Запускаем сервер
+	webDir := "./web"
 	server.Start(webDir)
 }
