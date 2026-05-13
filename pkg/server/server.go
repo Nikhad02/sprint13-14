@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sprint13-14/pkg/api"
 )
 
 // Start запускает наш веб-сервер
@@ -18,6 +19,7 @@ func Start(webDir string) {
 	fileServer := http.FileServer(http.Dir(webDir))
 	http.Handle("/", fileServer)
 
+	http.HandleFunc("/api/nextdate", api.NextDateHandler)
 	log.Printf("Сервер запущен на http://localhost:%s", port)
 
 	// Запуск

@@ -86,7 +86,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		daysParam := strings.Split(parts[1], ",")
 		var monthsParam []string
 		if len(parts) > 2 {
-			monthsParam = strings.Split(parts[2], ",") // "1,12"
+			monthsParam = strings.Split(parts[2], ",")
 		}
 
 		next := start
@@ -106,7 +106,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 				}
 				if !matchMonth {
 					continue
-				} // Если месяц не тот, идем к следующему дню
+				}
 			}
 
 			// 2. Проверяем день месяца
