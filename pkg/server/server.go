@@ -19,7 +19,7 @@ func Start(webDir string) {
 	fileServer := http.FileServer(http.Dir(webDir))
 	http.Handle("/", fileServer)
 
-	http.HandleFunc("/api/nextdate", api.NextDateHandler)
+	api.Init()
 	log.Printf("Сервер запущен на http://localhost:%s", port)
 
 	// Запуск

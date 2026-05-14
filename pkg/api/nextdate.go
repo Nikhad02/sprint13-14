@@ -1,8 +1,9 @@
-package nextdate
+package api
 
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -139,4 +140,31 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		}
 	}
 	return "", errors.New("could not calculate next date")
+}
+
+func NextDateHandler(w http.ResponseWriter, r *http.Request) {
+	nowStr := r.FormValue("now")
+	dateStr := r.FormValue("date")
+	repeat := r.FormValue("repeat")
+
+	var now time.Time
+	var err error
+
+	if nowStr == "" {
+		now = time.Now()
+	} else {
+		now, err = time.Parse(DateLayout, nowStr)
+		if err != nil {
+			http.Error(w, "invalid now date", http.StatusBadRequest)
+			return
+		}
+	}
+
+	res, err := NextDate(now, dateStr, repeat)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Write([]byte(res))
 }
