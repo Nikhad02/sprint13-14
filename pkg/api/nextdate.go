@@ -12,6 +12,10 @@ import (
 const DateLayout = "20060102"
 
 func NextDate(now time.Time, dstart string, repeat string) (string, error) {
+	if dstart == "" {
+		return "", errors.New("invalid start date")
+	}
+
 	if repeat == "" {
 		return "", errors.New("repeat rule is empty")
 	}
@@ -59,17 +63,32 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		}
 		weekDays := strings.Split(parts[1], ",")
 
+		var targets []int
+		for _, d := range weekDays {
+			val, err := strconv.Atoi(d)
+			if err != nil || val < 1 || val > 7 {
+				return "", errors.New("invalid weekday")
+			}
+			targets = append(targets, val)
+		}
+
 		next := start
+		if now.Sub(next).Hours() > 24*7 {
+
+			weeksBreak := int(now.Sub(next).Hours() / (24 * 7))
+
+			next = next.AddDate(0, 0, weeksBreak*7)
+
+		}
 		for {
-			next = next.AddDate(0, 0, 1) // Шагаем по дню
+			next = next.AddDate(0, 0, 1)
 
 			weekday := int(next.Weekday())
 			if weekday == 0 {
 				weekday = 7
 			}
 
-			for _, d := range weekDays {
-				targetDay, _ := strconv.Atoi(d)
+			for _, targetDay := range targets {
 				if weekday == targetDay && next.After(now) {
 					return next.Format(DateLayout), nil
 				}
@@ -85,21 +104,43 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		}
 
 		daysParam := strings.Split(parts[1], ",")
-		var monthsParam []string
+
+		var targetDays []int
+		for _, dStr := range daysParam {
+			d, err := strconv.Atoi(dStr)
+			if err != nil || d < -2 || d > 31 || d == 0 {
+				return "", errors.New("invalid month day")
+			}
+			targetDays = append(targetDays, d)
+		}
+
+		var targetMonths []int
 		if len(parts) > 2 {
-			monthsParam = strings.Split(parts[2], ",")
+			monthsParam := strings.Split(parts[2], ",")
+
+			for _, mStr := range monthsParam {
+				m, err := strconv.Atoi(mStr)
+				if err != nil || m < 1 || m > 12 {
+					return "", errors.New("invalid month")
+				}
+				targetMonths = append(targetMonths, m)
+			}
 		}
 
 		next := start
+		if next.Before(time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())) {
+
+			next = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+			next = next.AddDate(0, 0, -1)
+		}
+
 		for {
 			next = next.AddDate(0, 0, 1)
 
-			// 1. Проверяем месяц (если он указан)
-			if len(monthsParam) > 0 {
+			if len(targetMonths) > 0 {
 				matchMonth := false
 				currentMonth := int(next.Month())
-				for _, m := range monthsParam {
-					targetMonth, _ := strconv.Atoi(m)
+				for _, targetMonth := range targetMonths {
 					if currentMonth == targetMonth {
 						matchMonth = true
 						break
@@ -110,17 +151,13 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 				}
 			}
 
-			// 2. Проверяем день месяца
 			currentDay := next.Day()
-			lastDay := time.Date(next.Year(), next.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+			lastDay := time.Date(next.Year(), next.Month()+1, 0, 0, 0, 0, 0, now.Location()).Day()
 
 			matchDay := false
-			for _, dStr := range daysParam {
-				d, _ := strconv.Atoi(dStr)
-
+			for _, d := range targetDays {
 				targetDay := d
 				if d < 0 {
-					// Логика для -1 (последний), -2 (предпоследний)
 					targetDay = lastDay + d + 1
 				}
 
@@ -138,6 +175,8 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 				break
 			}
 		}
+	default:
+		return "", errors.New("unknown repeat rule") // Важно возвращать ошибку на неизвестное правило
 	}
 	return "", errors.New("could not calculate next date")
 }

@@ -22,7 +22,6 @@ func Start(webDir string) {
 	api.Init()
 	log.Printf("Сервер запущен на http://localhost:%s", port)
 
-	// Запуск
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatalf("Ошибка запуска сервера: %v", err)

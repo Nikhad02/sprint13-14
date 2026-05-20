@@ -20,28 +20,22 @@ CREATE TABLE IF NOT EXISTS scheduler (
 CREATE INDEX IF NOT EXISTS idx_date ON scheduler (date);
 `
 
-// Init открывает базу данных и создает таблицу, если файла не было
 func Init(dbFile string) error {
 	var install bool
-
-	// Проверяем существование файла
-	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
+	_, err := os.Stat(dbFile)
+	if os.IsNotExist(err) {
 		install = true
 	}
 
-	// Открываем базу данных
-	var err error
 	DB, err = sql.Open("sqlite", dbFile)
 	if err != nil {
 		return err
 	}
 
-	// Проверяем соединение
 	if err = DB.Ping(); err != nil {
 		return err
 	}
 
-	// Если файла не было, выполняем установку схемы
 	if install {
 		_, err = DB.Exec(schema)
 		if err != nil {
