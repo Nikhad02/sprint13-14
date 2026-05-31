@@ -176,7 +176,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 			}
 		}
 	default:
-		return "", errors.New("unknown repeat rule") // Важно возвращать ошибку на неизвестное правило
+		return "", errors.New("unknown repeat rule")
 	}
 	return "", errors.New("could not calculate next date")
 }

@@ -26,7 +26,6 @@ func AddTask(task *Task) (int64, error) {
 		return 0, err
 	}
 
-	// Получаем ID, который SQLite сгенерировал автоматически (AUTOINCREMENT)
 	id, err = res.LastInsertId()
 	if err != nil {
 		return 0, err
@@ -66,19 +65,16 @@ func Tasks(limit int, search string) ([]Task, error) {
 		var idInt int
 		var t Task
 
-		// Сканируем данные из БД. ID забираем как число.
 		err = rows.Scan(&idInt, &t.Date, &t.Title, &t.Comment, &t.Repeat)
 		if err != nil {
 			return nil, err
 		}
 
-		// Переводим числовой ID в строку для соответствия структуре Task
 		t.ID = strconv.Itoa(idInt)
 
 		tasks = append(tasks, t)
 	}
 
-	// Проверяем, не было ли ошибок во время итерации по строкам
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
@@ -87,7 +83,6 @@ func Tasks(limit int, search string) ([]Task, error) {
 }
 
 func GetTask(id string) (*Task, error) {
-	// Переводим строковый ID в число для базы данных
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, errors.New("неверный формат идентификатора")
@@ -98,7 +93,6 @@ func GetTask(id string) (*Task, error) {
 
 	query := `SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`
 
-	// QueryRow выполняет запрос и сразу готовит данные для Scan
 	err = DB.QueryRow(query, idInt).Scan(&dbID, &t.Date, &t.Title, &t.Comment, &t.Repeat)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -107,7 +101,6 @@ func GetTask(id string) (*Task, error) {
 		return nil, err
 	}
 
-	// Записываем строковый ID обратно в структуру
 	t.ID = strconv.Itoa(dbID)
 	return &t, nil
 }
@@ -125,7 +118,6 @@ func UpdateTask(task *Task) error {
 		return err
 	}
 
-	// Проверяем, изменилось ли что-то в базе
 	count, err := res.RowsAffected()
 	if err != nil {
 		return err
@@ -149,7 +141,6 @@ func DeleteTask(id string) error {
 		return err
 	}
 
-	// Проверяем, было ли вообще что удалять
 	count, err := res.RowsAffected()
 	if err != nil {
 		return err

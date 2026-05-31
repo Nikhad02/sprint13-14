@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	_ "modernc.org/sqlite" // Импорт драйвера без прямого использования
+	_ "modernc.org/sqlite"
 )
 
 var DB *sql.DB

@@ -7,15 +7,12 @@ import (
 	"sprint13-14/pkg/api"
 )
 
-// Start запускает наш веб-сервер
 func Start(webDir string) {
-	// Ищем порт в переменных окружения
 	port := os.Getenv("TODO_PORT")
 	if port == "" {
-		port = "7540" // Порт по умолчанию
+		port = "7540"
 	}
 
-	// Настраиваем файловый сервер
 	fileServer := http.FileServer(http.Dir(webDir))
 	http.Handle("/", fileServer)
 
